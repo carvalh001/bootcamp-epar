@@ -7,6 +7,7 @@ import { defaultInputs } from '@/constants/calculatorDefaults';
 import { useIpAddress } from './useIpAddress';
 import { saveCalculatorSubmission } from '@/utils/calculatorStorage';
 import { useCalculatorValidation } from './useCalculatorValidation';
+import { submitContactForm } from '@/utils/submitContactForm';
 
 const useCalculatorData = () => {
   const [inputs, setInputs] = useState<CalculatorInput>(defaultInputs);
@@ -74,52 +75,45 @@ const useCalculatorData = () => {
       }));
     }
     
-    saveCalculatorSubmission(sessionId, inputs, null, ipAddress);
+    
     
     if (showResults) {
       setShowResults(false);
     }
   };
   
-  const calculateResults = () => {
+  const calculateResults = async () => {
     if (!validateInputs(inputs)) {
       return null;
     }
-    
+  
     setIsCalculating(true);
-    
-    setTimeout(() => {
+  
+    setTimeout(async () => {
       const calculationResults = calculatePortfolioValue(inputs);
       setResults(calculationResults);
       setShowResults(true);
       setIsCalculating(false);
-      
-      saveCalculatorSubmission(sessionId, inputs, calculationResults, ipAddress);
+  
+      // Salva com resultados completos
+      await saveCalculatorSubmission(sessionId, inputs, calculationResults, ipAddress);
     }, 3000);
-    
+  
     return null;
   };
   
-  const saveContactForm = (contactInfo: ContactInfo) => {
-    try {
-      const existingSubmissionsString = localStorage.getItem('calculatorSubmissions');
-      let existingSubmissions = existingSubmissionsString ? JSON.parse(existingSubmissionsString) : [];
-      
-      const existingIndex = existingSubmissions.findIndex((s: any) => s.id === sessionId);
-      
-      if (existingIndex >= 0) {
-        existingSubmissions[existingIndex] = {
-          ...existingSubmissions[existingIndex],
-          contactInfo,
-          isSubmitted: true
-        };
-        
-        localStorage.setItem('calculatorSubmissions', JSON.stringify(existingSubmissions));
-      }
-    } catch (error) {
-      console.error('Error saving contact form:', error);
+
+
+  const saveContactForm = async (contactInfo: ContactInfo): Promise<boolean> => {
+    const success = await submitContactForm(contactInfo, sessionId);
+    if (success) {
+      setFormSubmitted(true);
+      return true;
     }
+    return false;
   };
+  
+  
   
   const resetCalculator = () => {
     setInputs(defaultInputs);

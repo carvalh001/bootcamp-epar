@@ -1,4 +1,3 @@
-
 export interface CalculatorInput {
   numProperties: number;
   averageRent: number;
@@ -31,4 +30,7 @@ export interface CalculationResult {
   potentialGrowth: number;
   stabilityScore: number;
   growthRate: number;
+  stabilityCategory: 'Frágil' | 'Moderada';
+  averageContractDuration: number;
+  growthCategory: 'Negativo' | 'Frágil' | 'Moderada' | 'Positiva';
 }

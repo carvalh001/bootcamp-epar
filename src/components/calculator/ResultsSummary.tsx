@@ -1,3 +1,5 @@
+// src/components/calculator/ResultsSummary.tsx
+
 import React from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/calculator/format-utils';
@@ -20,11 +22,13 @@ interface ResultsSummaryProps {
 const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distribution }) => {
   if (!results) return null;
 
-  // Formata valores principais
-  const portfolioValue    = formatCurrency(results.portfolioValue || 0);
-  const annualRevenue     = formatCurrency(results.annualRevenue || 0);
-  const monthlyRevenue    = formatCurrency(results.monthlyRevenue || 0);
-  const potentialGrowth   = formatCurrency(results.potentialGrowth || 0);
+  const portfolioValue = formatCurrency(results.portfolioValue);
+  const annualRevenue = formatCurrency(results.annualRevenue);
+  const monthlyRevenue = formatCurrency(results.monthlyRevenue);
+
+  const growthColor = results.potentialGrowth >= 0 ? 'text-green-600' : 'text-red-600';
+  const potentialGrowth = `${Math.round(results.potentialGrowth)}%`;
+
 
   return (
     <div className="space-y-8">
@@ -48,14 +52,15 @@ const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distri
           icon={TrendingUp}
           iconColor="text-realestate-secondary-600"
           secondaryLabel="Potencial de Crescimento"
-          secondaryValue={potentialGrowth}
+          secondaryValue={<span className={`font-semibold ${growthColor}`}>{potentialGrowth}</span>}
         />
       </div>
 
       <DetailedAnalysis inputs={inputs} results={results} distribution={distribution} />
 
       <div className="text-xs text-gray-500 italic mt-2">
-        * Valores estimados, tendo em vista que para uma melhor avaliação, devemos considerar outras informações adicionais.
+        * Valores estimados, tendo em vista que para uma melhor avaliação, devemos considerar
+        outras informações adicionais.
       </div>
     </div>
   );

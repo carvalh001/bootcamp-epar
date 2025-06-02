@@ -1,4 +1,5 @@
 // src/hooks/useCalculatorData.ts
+
 import { useState } from 'react'
 import { CalculatorInput, CalculationResult, calculatePortfolioValue } from '@/utils/calculateValue'
 import { ContactInfo } from '@/types/calculator'
@@ -9,6 +10,7 @@ import { useCalculatorValidation } from './useCalculatorValidation'
 import { submitContactForm } from '@/utils/submitContactForm'
 import { v4 as uuidv4 } from 'uuid'
 import { useCalculatorSession } from '@/contexts/CalculatorSessionContext'
+import { normalizeCalculationResult } from '../utils/normalizeResult'
 
 const useCalculatorData = () => {
   const { sessionId, setSessionId } = useCalculatorSession()
@@ -43,7 +45,7 @@ const useCalculatorData = () => {
         'Vitória': 'ES',
         'Florianópolis': 'SC',
         'Natal': 'RN',
-        'João Pessoa': 'PB',
+        'João Pessoa': 'PB'
       }
       const stateValue = stateMapping[cityStr] ?? ''
       setInputs(prev => ({ ...prev, city: cityStr, state: stateValue }))
@@ -52,14 +54,14 @@ const useCalculatorData = () => {
       setInputs(prev => ({
         ...prev,
         residentialPercentage: v,
-        commercialPercentage: 100 - v,
+        commercialPercentage: 100 - v
       }))
     } else if (key === 'commercialPercentage') {
       const v = Number(value)
       setInputs(prev => ({
         ...prev,
         commercialPercentage: v,
-        residentialPercentage: 100 - v,
+        residentialPercentage: 100 - v
       }))
     } else {
       setInputs(prev => ({ ...prev, [key]: value }))
@@ -78,20 +80,24 @@ const useCalculatorData = () => {
     setIsCalculating(true)
 
     setTimeout(async () => {
-      const calculationResults = calculatePortfolioValue(inputs)
-      setResults(calculationResults)
+      const localResults = calculatePortfolioValue(inputs)
+      setResults(localResults)
       setShowResults(true)
       setIsCalculating(false)
 
-      // salva submissão e atualiza o sessionId caso o backend retorne outro
-      const savedId = await saveCalculatorSubmission(
+      const { id: savedId, results: backendResults } = await saveCalculatorSubmission(
         sessionId,
         inputs,
-        calculationResults,
+        localResults,
         ipAddress
       )
+
       if (savedId) {
         setSessionId(savedId)
+      }
+
+      if (backendResults) {
+        setResults(normalizeCalculationResult(backendResults))
       }
     }, 3000)
 
@@ -127,7 +133,7 @@ const useCalculatorData = () => {
     resetCalculator,
     saveContactForm,
     setFormSubmitted,
-    lastSubmissionId: sessionId,
+    lastSubmissionId: sessionId
   }
 }
 

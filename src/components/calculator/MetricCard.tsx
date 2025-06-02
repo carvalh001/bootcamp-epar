@@ -1,10 +1,11 @@
+// src/components/calculator/MetricCard.tsx
 
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
-  value: string;
+  value: React.ReactNode;
   icon: LucideIcon;
   iconColor: string;
   secondaryValue?: string | null;
@@ -13,11 +14,11 @@ interface MetricCardProps {
   blurIntensity?: string;
 }
 
-const MetricCard = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  iconColor, 
+const MetricCard = ({
+  title,
+  value,
+  icon: Icon,
+  iconColor,
   secondaryValue = null,
   secondaryLabel = null,
   blurred = false,

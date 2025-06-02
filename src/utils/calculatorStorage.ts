@@ -1,6 +1,6 @@
 // src/utils/calculatorStorage.ts
 
-import { CalculatorInput, CalculationResult } from '@/utils/calculateValue';
+import { CalculatorInput, CalculationResult } from '@/utils/calculateValue'
 
 export const saveCalculatorSubmission = async (
   sessionId: string,
@@ -8,7 +8,7 @@ export const saveCalculatorSubmission = async (
   results: CalculationResult | null,
   ipAddress: string,
   isSubmitted: boolean = false
-): Promise<string | null> => {
+): Promise<{ id: string; results: CalculationResult | null }> => {
   try {
     const payload = {
       id: sessionId,
@@ -41,9 +41,9 @@ export const saveCalculatorSubmission = async (
       stability_score: results?.stabilityScore ?? 0,
       growth_rate: results?.growthRate ?? 0,
       is_submitted: isSubmitted
-    };
+    }
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
     const response = await fetch(`${API_BASE_URL}/submissions/`, {
       method: 'POST',
@@ -51,18 +51,17 @@ export const saveCalculatorSubmission = async (
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
-    });
-    
+    })
 
     if (!response.ok) {
-      console.error('Erro ao enviar submissão:', response.statusText);
-      return null;
+      console.error('Erro ao enviar submissão:', response.statusText)
+      return { id: sessionId, results: null }
     }
 
-    const data = await response.json();
-    return data?.id ?? sessionId; // Usa o retorno se vier, ou mantém o sessionId
+    const data = await response.json()
+    return { id: sessionId, results: data }
   } catch (error) {
-    console.error('Erro no envio da submissão:', error);
-    return null;
+    console.error('Erro no envio da submissão:', error)
+    return { id: sessionId, results: null }
   }
-};
+}

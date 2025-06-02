@@ -1,3 +1,5 @@
+// src/components/calculator/DetailedAnalysis.tsx
+
 import React from 'react';
 import { Shield, TrendingUp, Calendar } from 'lucide-react';
 import { formatCurrency } from '@/utils/calculator/format-utils';
@@ -24,9 +26,12 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 }) => {
   if (!results) return null;
 
-  // Formata para duas casas decimais
-  const formattedStabilityScore = results.stabilityScore.toFixed(2);
-  const formattedGrowthRate     = results.growthRate.toFixed(2);
+  const formattedStabilityScore =
+    typeof results.stabilityScore === 'number'
+      ? results.stabilityScore.toFixed(2)
+      : results.stabilityScore;
+
+  const formattedGrowthRate = results.growthRate.toFixed(2);
 
   return (
     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
@@ -37,22 +42,14 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <MetricCard
           title="Estabilidade da Carteira"
-          value={
-            <span className="inline-block">
-              {formattedStabilityScore}%
-            </span>
-          }
+          value={<span className="inline-block">{formattedStabilityScore}</span>}
           icon={Shield}
           iconColor="text-blue-600"
         />
 
         <MetricCard
           title="Taxa de Crescimento"
-          value={
-            <span className="inline-block">
-              {formattedGrowthRate}%
-            </span>
-          }
+          value={<span className="inline-block">{formattedGrowthRate}%</span>}
           icon={TrendingUp}
           iconColor="text-green-600"
         />
@@ -99,8 +96,8 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Garantia Predominante:</span>
             <span className="font-medium">
-              {inputs.predominantGuaranteeType === "Garantia Fidejussoria"
-                ? "Garantia Locatícia"
+              {inputs.predominantGuaranteeType === 'Garantia Fidejussoria'
+                ? 'Garantia Locatícia'
                 : inputs.predominantGuaranteeType}
             </span>
           </div>

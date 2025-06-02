@@ -6,13 +6,6 @@ import MetricCard from './MetricCard';
 import DetailedAnalysis from './DetailedAnalysis';
 import type { CalculatorInput, CalculationResult } from '@/types/calculator-types';
 
-/**
- * Substitui todos os dígitos do texto por 'X', mantendo pontuação e símbolos.
- */
-const maskDigits = (text: string): string => {
-  return text.replace(/\d/g, 'X');
-};
-
 interface ResultsSummaryProps {
   results: CalculationResult | null;
   inputs: CalculatorInput;
@@ -27,11 +20,11 @@ interface ResultsSummaryProps {
 const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distribution }) => {
   if (!results) return null;
 
-  // Formata e mascareia valores principais
-  const maskedPortfolioValue = maskDigits(formatCurrency(results.portfolioValue || 0));
-  const maskedAnnualRevenue = maskDigits(formatCurrency(results.annualRevenue || 0));
-  const maskedMonthlyRevenue = maskDigits(formatCurrency(results.monthlyRevenue || 0));
-  const maskedPotentialGrowth = maskDigits(formatCurrency(results.potentialGrowth || 0));
+  // Formata valores principais
+  const portfolioValue    = formatCurrency(results.portfolioValue || 0);
+  const annualRevenue     = formatCurrency(results.annualRevenue || 0);
+  const monthlyRevenue    = formatCurrency(results.monthlyRevenue || 0);
+  const potentialGrowth   = formatCurrency(results.potentialGrowth || 0);
 
   return (
     <div className="space-y-8">
@@ -42,24 +35,20 @@ const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distri
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MetricCard
           title="Valor da Carteira"
-          value={maskedPortfolioValue}
+          value={portfolioValue}
           icon={DollarSign}
           iconColor="text-realestate-primary-600"
           secondaryLabel="Receita Anual"
-          secondaryValue={maskedAnnualRevenue}
-          blurred={true}
-          blurIntensity="blur-[6px]"
+          secondaryValue={annualRevenue}
         />
 
         <MetricCard
           title="Receita Mensal"
-          value={maskedMonthlyRevenue}
+          value={monthlyRevenue}
           icon={TrendingUp}
           iconColor="text-realestate-secondary-600"
           secondaryLabel="Potencial de Crescimento"
-          secondaryValue={maskedPotentialGrowth}
-          blurred={true}
-          blurIntensity="blur-[6px]"
+          secondaryValue={potentialGrowth}
         />
       </div>
 

@@ -17,14 +17,6 @@ interface DetailedAnalysisProps {
   };
 }
 
-/**
- * Substitui todos os dígitos do texto por 'X', mantendo pontuação e símbolos.
- * Exemplo: "R$ 55.499,50" → "R$ XX.XXX,XX"
- */
-const maskDigits = (text: string): string => {
-  return text.replace(/\d/g, 'X');
-};
-
 const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   inputs,
   results,
@@ -32,9 +24,9 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 }) => {
   if (!results) return null;
 
-  // Formata e mascareia os valores sensíveis
-  const maskedStabilityScore = maskDigits(`${results.stabilityScore}%`);
-  const maskedGrowthRate = maskDigits(`${results.growthRate}%`);
+  // Formata para duas casas decimais
+  const formattedStabilityScore = results.stabilityScore.toFixed(2);
+  const formattedGrowthRate     = results.growthRate.toFixed(2);
 
   return (
     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
@@ -46,8 +38,8 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
         <MetricCard
           title="Estabilidade da Carteira"
           value={
-            <span className="inline-block blur-sm">
-              {maskedStabilityScore}
+            <span className="inline-block">
+              {formattedStabilityScore}%
             </span>
           }
           icon={Shield}
@@ -57,8 +49,8 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
         <MetricCard
           title="Taxa de Crescimento"
           value={
-            <span className="inline-block blur-sm">
-              {maskedGrowthRate}
+            <span className="inline-block">
+              {formattedGrowthRate}%
             </span>
           }
           icon={TrendingUp}

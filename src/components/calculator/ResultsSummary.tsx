@@ -52,7 +52,11 @@ const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distri
           icon={TrendingUp}
           iconColor="text-realestate-secondary-600"
           secondaryLabel="Potencial de Crescimento"
-          secondaryValue={<span className={`font-semibold ${growthColor}`}>{potentialGrowth}</span>}
+          secondaryValue={
+            <span className={`font-semibold ${growthColor}`}>
+              {results.growthCategory} {/* Exibe a string categórica */}
+            </span>
+          }
         />
       </div>
 

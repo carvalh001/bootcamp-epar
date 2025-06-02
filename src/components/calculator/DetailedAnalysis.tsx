@@ -31,7 +31,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       ? results.stabilityScore.toFixed(2)
       : results.stabilityScore;
 
-  const formattedGrowthRate = results.growthRate.toFixed(2);
+  const formattedGrowthRate = Math.round(results.growthRate);
 
   return (
     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">

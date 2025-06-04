@@ -3,7 +3,6 @@
 import React from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/calculator/format-utils';
-import { formatNumber } from '@/utils/formatUtils';
 import MetricCard from './MetricCard';
 import DetailedAnalysis from './DetailedAnalysis';
 import type { CalculatorInput, CalculationResult } from '@/types/calculator-types';
@@ -17,18 +16,30 @@ interface ResultsSummaryProps {
     long: number;
     indefinite: number;
   };
+  isBlurred?: boolean;
 }
 
-const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distribution }) => {
+const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distribution, isBlurred = true }) => {
   if (!results) return null;
 
   const portfolioValue = formatCurrency(results.portfolioValue);
   const annualRevenue = formatCurrency(results.annualRevenue);
   const monthlyRevenue = formatCurrency(results.monthlyRevenue);
-
   const growthColor = results.potentialGrowth >= 0 ? 'text-green-600' : 'text-red-600';
-  const potentialGrowth = `${Math.round(results.potentialGrowth)}%`;
+  const growthCategory = results.growthCategory;
 
+  const blurClass = 'blur-sm select-none transition-all duration-300';
+  const realClass = 'transition-all duration-300';
+
+  const renderValue = (value: string) =>
+    isBlurred ? <span className={blurClass}>R$ ******</span> : <span className={realClass}>{value}</span>;
+
+  const renderGrowth = () =>
+    isBlurred ? (
+      <span className={`${growthColor} ${blurClass}`}>Confidencial</span>
+    ) : (
+      <span className={`${growthColor} ${realClass}`}>{growthCategory}</span>
+    );
 
   return (
     <div className="space-y-8">
@@ -39,24 +50,20 @@ const ResultsSummary: React.FC<ResultsSummaryProps> = ({ results, inputs, distri
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MetricCard
           title="Valor da Carteira"
-          value={portfolioValue}
+          value={renderValue(portfolioValue)}
           icon={DollarSign}
           iconColor="text-realestate-primary-600"
           secondaryLabel="Receita Anual"
-          secondaryValue={annualRevenue}
+          secondaryValue={renderValue(annualRevenue)}
         />
 
         <MetricCard
           title="Receita Mensal"
-          value={monthlyRevenue}
+          value={renderValue(monthlyRevenue)}
           icon={TrendingUp}
           iconColor="text-realestate-secondary-600"
           secondaryLabel="Potencial de Crescimento"
-          secondaryValue={
-            <span className={`font-semibold ${growthColor}`}>
-              {results.growthCategory} {/* Exibe a string categórica */}
-            </span>
-          }
+          secondaryValue={renderGrowth()}
         />
       </div>
 

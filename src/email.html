@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resumo da Sua Avaliação</title>
+  <!-- Inline styles para compatibilidade -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333333;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      margin: 0 0 12px;
+      color: #1f2937;
+    }
+    p {
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+    .metrics {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .metrics th,
+    .metrics td {
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    .metrics th {
+      background-color: #f3f4f6;
+    }
+    .details {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .details th,
+    .details td {
+      padding: 6px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .footer {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 16px;
+      background-color: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Olá, {{ contact.name }}!</h1>
+    <p>Segue abaixo o resumo da avaliação da sua carteira de locação:</p>
+
+    <!-- Seção de Summary -->
+    <h2>Resumo de Métricas</h2>
+    <table class="metrics">
+      <tr>
+        <th>Métrica</th>
+        <th>Valor</th>
+      </tr>
+      <tr>
+        <td>Valor da Carteira</td>
+        <td>{{ results.portfolioValue | currency("BRL") }}</td>
+      </tr>
+      <tr>
+        <td>Receita Mensal</td>
+        <td>{{ results.monthlyRevenue | currency("BRL") }}</td>
+      </tr>
+      <tr>
+        <td>Receita Anual</td>
+        <td>{{ results.annualRevenue | currency("BRL") }}</td>
+      </tr>
+      <tr>
+        <td>Potencial de Crescimento</td>
+        <td>{{ results.potentialGrowth | currency("BRL") }}</td>
+      </tr>
+      <tr>
+        <td>Taxa de Crescimento</td>
+        <td>{{ results.growthRate }}%</td>
+      </tr>
+      <tr>
+        <td>Estabilidade da Carteira</td>
+        <td>{{ results.stabilityScore }}%</td>
+      </tr>
+      <tr>
+        <td>Duração Média dos Contratos</td>
+        <td>{{ results.averageContractDuration }} meses</td>
+      </tr>
+    </table>
+
+    <!-- Seção de Details -->
+    <h2>Detalhes dos Parâmetros</h2>
+    <table class="details">
+      <tr>
+        <td><strong>Número de Contratos:</strong></td>
+        <td>{{ inputs.numProperties }}</td>
+      </tr>
+      <tr>
+        <td><strong>Valor Médio de Aluguel:</strong></td>
+        <td>{{ inputs.averageRent | currency("BRL") }}</td>
+      </tr>
+      <tr>
+        <td><strong>Taxa de Administração:</strong></td>
+        <td>{{ inputs.occupancyRate }}%</td>
+      </tr>
+      <tr>
+        <td><strong>Taxa de Inadimplência:</strong></td>
+        <td>{{ inputs.defaultRate }}%</td>
+      </tr>
+      <tr>
+        <td><strong>Taxa de Primeira Locação:</strong></td>
+        <td>{{ inputs.averageCommission }}%</td>
+      </tr>
+      <tr>
+        <td><strong>Cidade / Estado:</strong></td>
+        <td>{{ inputs.city }} / {{ inputs.state }}</td>
+      </tr>
+      <!-- … demais parâmetros que desejar incluir … -->
+    </table>
+
+    <p>
+      Caso queira discutir esses resultados ou ajustar algum parâmetro, responda a este e-mail ou 
+      <a href="https://seu-site.com/contato" class="btn">Fale Conosco</a>.
+    </p>
+
+    <div class="footer">
+      <p>© {{ now.year }} Sua Empresa. Todos os direitos reservados.</p>
+    </div>
+  </div>
+</body>
+</html>

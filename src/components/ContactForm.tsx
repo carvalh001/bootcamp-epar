@@ -13,7 +13,7 @@ interface ContactFormProps {
   results?: CalculationResult | null;
   onSubmitted: () => void;
   cityState: { city: string, state: string } | null;
-  onFormSave?: (contactInfo: ContactInfo) => void;
+  onFormSave?: (contactInfo: ContactInfo) => Promise<boolean>;
 }
 
 const ContactForm = ({ results, onSubmitted, cityState, onFormSave }: ContactFormProps) => {
@@ -48,7 +48,7 @@ const ContactForm = ({ results, onSubmitted, cityState, onFormSave }: ContactFor
     return !commonDomains.includes(domain);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
@@ -64,14 +64,19 @@ const ContactForm = ({ results, onSubmitted, cityState, onFormSave }: ContactFor
       return;
     }
     
-    if (onFormSave) {
-      onFormSave(formData as ContactInfo);
+    if (onFormSave !== undefined && onFormSave !== null) {
+      const success = await onFormSave(formData as ContactInfo);
+      if (success) {
+        setShowFollowUp(true);
+      } else {
+        toast.error('Ocorreu um erro ao salvar seus dados. Tente novamente.');
+      }
     }
     
-    setTimeout(() => {
-      setLoading(false);
-      setShowFollowUp(true);
-    }, 1500);
+    
+    
+    setLoading(false);
+    
   };
   
   const handleFollowUpClose = () => {

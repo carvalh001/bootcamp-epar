@@ -1,16 +1,16 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowRight, Calculator as CalculatorIcon } from 'lucide-react';
 import CalculatorForm from './CalculatorForm';
 import useCalculatorData from '@/hooks/useCalculatorData';
 import ContactForm from './ContactForm';
 import ResultsSummary from './calculator/ResultsSummary';
 import SuccessMessage from './calculator/SuccessMessage';
+import FollowUpDialog from './calculator/FollowUpDialog';
 import { formatNumber } from '@/utils/formatUtils';
 
-const Calculator = () => {
+const Calculator: React.FC = () => {
   const {
     inputs,
     results,
@@ -24,17 +24,25 @@ const Calculator = () => {
     saveContactForm
   } = useCalculatorData();
 
-  // Calculate contract distribution percentages
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+
+  // Abre o diálogo de follow-up assim que o formulário de contato for submetido
+  useEffect(() => {
+    if (formSubmitted) {
+      setFollowUpOpen(true);
+    }
+  }, [formSubmitted]);
+
+  // Cálculo da distribuição de contratos
   const getContractDistribution = () => {
     const total = inputs.numProperties;
     if (total === 0) return { short: 0, medium: 0, long: 0, indefinite: 0 };
-    
-    const short = Math.round((inputs.contractsExpiring12Months / total) * 100);
-    const medium = Math.round(((inputs.contractsExpiring12To24Months + inputs.contractsExpiring24To36Months) / total) * 100);
-    const long = Math.round((inputs.contractsExpiringOver36Months / total) * 100);
-    const indefinite = Math.round((inputs.expiredIndefiniteContracts / total) * 100);
-    
-    return { short, medium, long, indefinite };
+    return {
+      short: Math.round((inputs.contractsExpiring12Months / total) * 100),
+      medium: Math.round(((inputs.contractsExpiring12To24Months + inputs.contractsExpiring24To36Months) / total) * 100),
+      long: Math.round((inputs.contractsExpiringOver36Months / total) * 100),
+      indefinite: Math.round((inputs.expiredIndefiniteContracts / total) * 100),
+    };
   };
 
   const distribution = getContractDistribution();
@@ -51,7 +59,7 @@ const Calculator = () => {
             Descubra quanto vale sua carteira de locação em poucos passos.
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="p-6 pt-8">
           {!showResults ? (
             <CalculatorForm inputs={inputs} onChange={handleInputChange} />
@@ -61,10 +69,10 @@ const Calculator = () => {
             <SuccessMessage resetCalculator={resetCalculator} />
           )}
         </CardContent>
-        
+
         <CardFooter className="p-6 pt-0">
           {!showResults ? (
-            <Button 
+            <Button
               onClick={calculateResults}
               className="w-full bg-realestate-primary hover:bg-realestate-dark flex items-center justify-center gap-2 py-6 text-lg"
               disabled={isCalculating}
@@ -85,15 +93,18 @@ const Calculator = () => {
               )}
             </Button>
           ) : !formSubmitted ? (
-            <ContactForm 
-              results={results} 
-              onSubmitted={() => setFormSubmitted(true)} 
+            <ContactForm
+              results={results}
+              onSubmitted={() => setFormSubmitted(true)}
               cityState={inputs.city ? { city: inputs.city, state: inputs.state } : null}
               onFormSave={saveContactForm}
             />
           ) : null}
         </CardFooter>
       </Card>
+
+      {/* Dialog de follow-up logo após o envio do email */}
+      <FollowUpDialog open={followUpOpen} onOpenChange={setFollowUpOpen} />
     </div>
   );
 };

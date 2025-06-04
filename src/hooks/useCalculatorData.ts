@@ -1,32 +1,32 @@
+// src/hooks/useCalculatorData.ts
 
-import { useState, useEffect } from 'react';
-import { CalculatorInput, CalculationResult, calculatePortfolioValue } from '@/utils/calculateValue';
-import { ContactInfo } from '@/types/calculator';
-import { v4 as uuidv4 } from 'uuid';
-import { defaultInputs } from '@/constants/calculatorDefaults';
-import { useIpAddress } from './useIpAddress';
-import { saveCalculatorSubmission } from '@/utils/calculatorStorage';
-import { useCalculatorValidation } from './useCalculatorValidation';
+import { useState } from 'react'
+import { CalculatorInput, CalculationResult, calculatePortfolioValue } from '@/utils/calculateValue'
+import { ContactInfo } from '@/types/calculator'
+import { defaultInputs } from '@/constants/calculatorDefaults'
+import { useIpAddress } from './useIpAddress'
+import { saveCalculatorSubmission } from '@/utils/calculatorStorage'
+import { useCalculatorValidation } from './useCalculatorValidation'
+import { submitContactForm } from '@/utils/submitContactForm'
+import { v4 as uuidv4 } from 'uuid'
+import { useCalculatorSession } from '@/contexts/CalculatorSessionContext'
+import { normalizeCalculationResult } from '../utils/normalizeResult'
 
 const useCalculatorData = () => {
-  const [inputs, setInputs] = useState<CalculatorInput>(defaultInputs);
-  const [results, setResults] = useState<CalculationResult | null>(null);
-  const [showResults, setShowResults] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [sessionId, setSessionId] = useState<string>('');
-  
-  const ipAddress = useIpAddress();
-  const { validateInputs } = useCalculatorValidation();
-  
-  useEffect(() => {
-    const newSessionId = uuidv4();
-    setSessionId(newSessionId);
-  }, []);
-  
+  const { sessionId, setSessionId } = useCalculatorSession()
+
+  const [inputs, setInputs] = useState<CalculatorInput>(defaultInputs)
+  const [results, setResults] = useState<CalculationResult | null>(null)
+  const [showResults, setShowResults] = useState(false)
+  const [formSubmitted, setFormSubmitted] = useState(false)
+  const [isCalculating, setIsCalculating] = useState(false)
+
+  const ipAddress = useIpAddress()
+  const { validateInputs } = useCalculatorValidation()
+
   const handleInputChange = (key: keyof CalculatorInput, value: number | string) => {
     if (key === 'city') {
-      const cityStr = String(value);
+      const cityStr = String(value)
       const stateMapping: Record<string, string> = {
         'São Paulo': 'SP',
         'Rio de Janeiro': 'RJ',
@@ -45,102 +45,96 @@ const useCalculatorData = () => {
         'Vitória': 'ES',
         'Florianópolis': 'SC',
         'Natal': 'RN',
-        'João Pessoa': 'PB',
-      };
-
-      const stateValue = stateMapping[cityStr] || '';
-      
-      setInputs(prev => ({
-        ...prev,
-        city: cityStr,
-        state: stateValue
-      }));
-    } else if (key === 'residentialPercentage') {
-      setInputs(prev => ({
-        ...prev,
-        residentialPercentage: value as number,
-        commercialPercentage: 100 - (value as number)
-      }));
-    } else if (key === 'commercialPercentage') {
-      setInputs(prev => ({
-        ...prev,
-        commercialPercentage: value as number,
-        residentialPercentage: 100 - (value as number)
-      }));
-    } else {
-      setInputs(prev => ({
-        ...prev,
-        [key]: value
-      }));
-    }
-    
-    saveCalculatorSubmission(sessionId, inputs, null, ipAddress);
-    
-    if (showResults) {
-      setShowResults(false);
-    }
-  };
-  
-  const calculateResults = () => {
-    if (!validateInputs(inputs)) {
-      return null;
-    }
-    
-    setIsCalculating(true);
-    
-    setTimeout(() => {
-      const calculationResults = calculatePortfolioValue(inputs);
-      setResults(calculationResults);
-      setShowResults(true);
-      setIsCalculating(false);
-      
-      saveCalculatorSubmission(sessionId, inputs, calculationResults, ipAddress);
-    }, 3000);
-    
-    return null;
-  };
-  
-  const saveContactForm = (contactInfo: ContactInfo) => {
-    try {
-      const existingSubmissionsString = localStorage.getItem('calculatorSubmissions');
-      let existingSubmissions = existingSubmissionsString ? JSON.parse(existingSubmissionsString) : [];
-      
-      const existingIndex = existingSubmissions.findIndex((s: any) => s.id === sessionId);
-      
-      if (existingIndex >= 0) {
-        existingSubmissions[existingIndex] = {
-          ...existingSubmissions[existingIndex],
-          contactInfo,
-          isSubmitted: true
-        };
-        
-        localStorage.setItem('calculatorSubmissions', JSON.stringify(existingSubmissions));
+        'João Pessoa': 'PB'
       }
-    } catch (error) {
-      console.error('Error saving contact form:', error);
+      const stateValue = stateMapping[cityStr] ?? ''
+      setInputs(prev => ({ ...prev, city: cityStr, state: stateValue }))
+    } else if (key === 'residentialPercentage') {
+      const v = Number(value)
+      setInputs(prev => ({
+        ...prev,
+        residentialPercentage: v,
+        commercialPercentage: 100 - v
+      }))
+    } else if (key === 'commercialPercentage') {
+      const v = Number(value)
+      setInputs(prev => ({
+        ...prev,
+        commercialPercentage: v,
+        residentialPercentage: 100 - v
+      }))
+    } else {
+      setInputs(prev => ({ ...prev, [key]: value }))
     }
-  };
-  
+
+    if (showResults) {
+      setShowResults(false)
+    }
+  }
+
+  const calculateResults = async () => {
+    if (!validateInputs(inputs)) {
+      return null
+    }
+
+    setIsCalculating(true)
+
+    setTimeout(async () => {
+      const localResults = calculatePortfolioValue(inputs)
+      setResults(localResults)
+      setShowResults(true)
+      setIsCalculating(false)
+
+      const { id: savedId, results: backendResults } = await saveCalculatorSubmission(
+        sessionId,
+        inputs,
+        localResults,
+        ipAddress
+      )
+
+      if (savedId) {
+        setSessionId(savedId)
+      }
+
+      if (backendResults) {
+        setResults(normalizeCalculationResult(backendResults))
+      }
+    }, 3000)
+
+    return null
+  }
+
+  const saveContactForm = async (contactInfo: ContactInfo): Promise<boolean> => {
+    const success = await submitContactForm(contactInfo, sessionId)
+    if (success) {
+      setFormSubmitted(true)
+      return true
+    }
+    return false
+  }
+
   const resetCalculator = () => {
-    setInputs(defaultInputs);
-    setResults(null);
-    setShowResults(false);
-    setFormSubmitted(false);
-    setSessionId(uuidv4());
-  };
-  
+    setInputs(defaultInputs)
+    setResults(null)
+    setShowResults(false)
+    setFormSubmitted(false)
+    const newId = uuidv4()
+    setSessionId(newId)
+  }
+
   return {
     inputs,
-    results,
+    results: results!,
     showResults,
     formSubmitted,
     isCalculating,
     handleInputChange,
     calculateResults,
     resetCalculator,
+    saveContactForm,
     setFormSubmitted,
-    saveContactForm
-  };
-};
+    lastSubmissionId: sessionId
+  }
+}
 
-export default useCalculatorData;
+export default useCalculatorData
